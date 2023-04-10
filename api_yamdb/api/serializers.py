@@ -57,6 +57,7 @@ class TitleSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     rating = serializers.IntegerField(read_only=True)
+#    rating = serializers.SerializerMethodField()
 #    rating = serializers.FloatField(
 #        source='reviews__score__avg',
 #        read_only=True
@@ -68,15 +69,42 @@ class TitleSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'year', 'rating', 'description',
                   'genre', 'category')
 
+#    def get_rating(self, obj):
+#        rating = obj.reviews.aggregate(score=Avg('score'))
+#        return rating.get('score')
+
 
 class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
+    score = serializers.IntegerField()
 
     class Meta:
         model = Review
         fields = ('id', 'author', 'text', 'score', 'pub_date')
 
+    def validate_score(self, value):
+        if value > 10:
+            raise serializers.ValidationError("Оценка выше 10 недопустима")
+        return value
+
+    def validate(self, data):
+        if self.context.get('request').method != 'POST':
+            return data
+        reviewer = self.context.get('request').user
+        title_id = self.context.get('view').kwargs['title_id']
+        if Review.objects.filter(author=reviewer, title__id=title_id).exists():
+            raise serializers.ValidationError(
+                'Нельзя оставлять 2 отзыва на одно произведение'
+            )
+        return data
+
 
 class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
 
     class Meta:
         model = Comment

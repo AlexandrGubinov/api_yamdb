@@ -13,7 +13,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticate
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Category, Comment, Genre, Rating, Review, Title
+from reviews.models import Category, Comment, Genre, Review, Title
 
 from . import serializers, permissions, filters
 from users.models import User
@@ -21,7 +21,7 @@ from users.models import User
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().order_by('name')
-    permission_classes = (permissions.IsAdminUserOrReadOnly, IsAuthenticatedOrReadOnly)
+    permission_classes = (permissions.IsAdminUserOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = filters.TitleFilter
 
@@ -68,13 +68,12 @@ class CategoryViewSet(mixins.ListModelMixin,
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.all()
     serializer_class = serializers.ReviewSerializer
-    permission_classes = (permissions.IsAuthor, permissions.IsAuthorOrModer)
+    permission_classes = (IsAuthenticatedOrReadOnly, permissions.IsAuthorOrModer)
 
     def get_queryset(self):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        return title.review.all()
+        return title.review.all().order_by('id')
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
@@ -86,20 +85,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, permissions.IsAuthor, permissions.NotUserRoleOrIsAuthor)
-
-#   def get_queryset(self):
-#       title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-#       review = title.review.filter(id=self.kwargs.get('review_id'))
-#       return review.comments.all()
+    permission_classes = (permissions.AuthorOrHasRoleOrReadOnly,)
 
     def get_queryset(self):
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        reviews = title.review.all()
-        review_id = self.kwargs.get('review_id')
-        review = reviews.filter(id=review_id)
-    #    review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
-        return review.comments.all()
+        review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
+        return review.comments.all().order_by('id')
 
     def perform_create(self, serializer):
         review_id = self.kwargs.get('review_id')
