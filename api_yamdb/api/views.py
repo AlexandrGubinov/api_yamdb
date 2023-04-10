@@ -13,7 +13,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticate
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Category, Comment, Genre, Rating, Review, Title
+from reviews.models import Category, Comment, Genre, Review, Title
 
 from . import serializers, permissions, filters
 from users.models import User
