@@ -52,15 +52,6 @@ class TitleGenre(models.Model):
         return f'{self.title} {self.genre}'
 
 
-class Rating(models.Model):
-    score = models.IntegerField(
-        validators=[
-            MaxValueValidator(10),
-            MinValueValidator(1)
-        ]
-    )
-
-
 class Review(models.Model):
     title = models.ForeignKey(
         Title,
@@ -73,12 +64,7 @@ class Review(models.Model):
         related_name='rewiew'
     )
     text = models.TextField()
-    score = models.ForeignKey(
-        Rating,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
+    score = models.PositiveIntegerField()
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
         auto_now_add=True
