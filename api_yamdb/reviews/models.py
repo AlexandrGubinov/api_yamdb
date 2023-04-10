@@ -35,12 +35,22 @@ class Title(models.Model):
         related_name='titles'
     )
     genre = models.ManyToManyField(Genre, through='TitleGenre')
+    rating = models.FloatField(blank=True, null=True)
 
     class Meta:
         ordering = ['-id']
 
     def __str__(self):
         return self.name
+
+    def update_rating(self):
+        reviews = self.review.all()
+        if reviews.count() > 0:
+            ratings_sum = sum(review.score for review in reviews)
+            self.rating = round(ratings_sum / reviews.count(), 1)
+        else:
+            self.rating = None
+        self.save()
 
 
 class TitleGenre(models.Model):

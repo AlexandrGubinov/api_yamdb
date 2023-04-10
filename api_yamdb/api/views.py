@@ -55,7 +55,7 @@ class CategoryViewSet(mixins.ListModelMixin,
                       viewsets.GenericViewSet):
     queryset = Category.objects.all().order_by('name')
     serializer_class = serializers.CategorySerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, permissions.IsAdminUserOrReadOnly)
+    permission_classes = (permissions.IsAdminUserOrReadOnly,)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
 
@@ -77,10 +77,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
-        return serializer.save(
+        review = serializer.save(
             author=self.request.user,
             title=get_object_or_404(Title, id=title_id)
         )
+        review.title.update_rating()
+        return review
 
 
 class CommentViewSet(viewsets.ModelViewSet):

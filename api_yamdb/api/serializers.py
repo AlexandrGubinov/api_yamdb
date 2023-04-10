@@ -54,24 +54,15 @@ class TitleSerializer(serializers.ModelSerializer):
         many=True,
     )
     category = CategorySerializer(
-        read_only=True,
+        read_only=True
     )
     rating = serializers.IntegerField(read_only=True)
-#    rating = serializers.SerializerMethodField()
-#    rating = serializers.FloatField(
-#        source='reviews__score__avg',
-#        read_only=True
-#    )
     year = serializers.IntegerField()
 
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'rating', 'description',
                   'genre', 'category')
-
-#    def get_rating(self, obj):
-#        rating = obj.reviews.aggregate(score=Avg('score'))
-#        return rating.get('score')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
