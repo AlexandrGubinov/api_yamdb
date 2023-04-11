@@ -21,14 +21,19 @@ from users.models import User
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().order_by('name')
-    permission_classes = (permissions.IsAdminUserOrReadOnly,)
+    permission_classes = (permissions.IsAdminUserOrReadOnly, IsAuthenticatedOrReadOnly)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = filters.TitleFilter
 
+#    def get_serializer_class(self):
+#        if self.action in ('POST', 'PATCH', 'DELETE'):
+#            return serializers.TitlePostSerializer
+#        return serializers.TitleSerializer
+    
     def get_serializer_class(self):
-        if self.action in ('POST', 'PATCH', 'DELETE'):
-            return serializers.TitlePostSerializer
-        return serializers.TitleSerializer
+        if self.action in ('list', 'retrieve'):
+            return serializers.TitleSerializer
+        return serializers.TitlePostSerializer
 
 
 class GenreViewSet(mixins.ListModelMixin,
